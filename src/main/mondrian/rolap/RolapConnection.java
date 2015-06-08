@@ -951,6 +951,8 @@ public class RolapConnection extends ConnectionBase {
             if (!tupleList.isEmpty()
                 && tupleList.get(0).get(0).getDimension().isHighCardinality())
             {
+              	LOGGER.info("\"highCardinality\" property is used."
+                    + " It can interfere with the results.");
                 filteredTupleList =
                     new DelegatingTupleList(
                         tupleList.getArity(),

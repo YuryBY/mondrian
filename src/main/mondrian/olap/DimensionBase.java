@@ -135,7 +135,7 @@ public abstract class DimensionBase
     }
 
     public boolean isHighCardinality() {
-        return this.highCardinality;
+    	return this.highCardinality;
     }
 
     private Hierarchy lookupHierarchy(Id.NameSegment s) {

@@ -1275,6 +1275,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
             if (hierarchy.getDimension().isHighCardinality()) {
+              	LOGGER.info("\"highCardinality\" property is used."
+                    + " It can interfere with the results.");
                 LOGGER.debug(
                     "High cardinality for " + hierarchy.getDimension());
                 return new NoCacheMemberReader(source);
