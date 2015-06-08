@@ -1323,8 +1323,8 @@ public class RolapResult extends ResultBase {
                 }
                 break;
             }
-          	LOGGER.info("\"highCardinality\" property is used."
-                + " It can interfere with the results.");
+            LOGGER.info(
+                "\"highCardinality\" property is used. It can interfere with the results.");
             positionsHighCardinality.put(axisOrdinal, highCardinality);
         }
         return highCardinality;

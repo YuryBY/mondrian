@@ -8,7 +8,6 @@
 // Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
@@ -135,7 +134,7 @@ public abstract class DimensionBase
     }
 
     public boolean isHighCardinality() {
-    	return this.highCardinality;
+        return this.highCardinality;
     }
 
     private Hierarchy lookupHierarchy(Id.NameSegment s) {

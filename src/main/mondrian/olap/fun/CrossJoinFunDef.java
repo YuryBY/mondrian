@@ -19,11 +19,12 @@ import mondrian.rolap.RolapEvaluator;
 import mondrian.rolap.RolapSchema;
 import mondrian.util.CartesianProductList;
 
-import java.util.*;
-
 import org.apache.log4j.Logger;
 
 import sun.security.action.GetLongAction;
+
+import java.util.*;
+
 
 /**
  * Definition of the <code>CrossJoin</code> MDX function.
@@ -32,8 +33,9 @@ import sun.security.action.GetLongAction;
  * @since Mar 23, 2006
  */
 public class CrossJoinFunDef extends FunDefBase {
-	private static final Logger LOGGER = Logger.getLogger(CrossJoinFunDef.class);
-	
+    private static final Logger LOGGER =
+        Logger.getLogger(CrossJoinFunDef.class);
+
     static final ReflectiveMultiResolver Resolver =
         new ReflectiveMultiResolver(
             "Crossjoin",
@@ -473,14 +475,14 @@ public class CrossJoinFunDef extends FunDefBase {
             if (o instanceof Member) {
                 // Cannot optimize high cardinality dimensions
                 if (((Member)o).getDimension().isHighCardinality()) {
-                	highCardinalityLoggingFlag = true;
+                    highCardinalityLoggingFlag = true;
                     return list;
                 }
             }
-        if(highCardinalityLoggingFlag){
-        	LOGGER.info("\"highCardinality\" property is used."
-                + " It can interfere with the results.");
-        }    
+        if (highCardinalityLoggingFlag) {
+            LOGGER.info(
+                "\"highCardinality\" property is used. It can interfere with the results.");
+        }
         } catch (IndexOutOfBoundsException ioobe) {
             return TupleCollections.emptyList(list.getArity());
         }

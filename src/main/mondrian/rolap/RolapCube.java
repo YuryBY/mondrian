@@ -8,7 +8,6 @@
 // Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.Calc;
@@ -184,8 +183,9 @@ public class RolapCube extends CubeBase {
         for (int i = 0; i < dimensions.length; i++) {
             MondrianDef.CubeDimension xmlCubeDimension = dimensions[i];
             if (xmlCubeDimension.highCardinality) {
-                getLogger().info("\"highCardinality\" property for "
-                    + xmlCubeDimension.name + " dimension is \"true\". It's deprecated behavior."
+                getLogger().info(
+                    "\"highCardinality\" property for " + xmlCubeDimension.name
+                    + " dimension is \"true\". It's deprecated behavior."
                     + " The feature will be removed in the next major release.");
             }
             // Look up usages of shared dimensions in the schema before

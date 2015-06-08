@@ -848,7 +848,7 @@ public class FunUtil extends Util {
             return;
         }
         if (memberList.get(0).getDimension().isHighCardinality()) {
-          	LOGGER.info("\"highCardinality\" property is used."
+            LOGGER.info("\"highCardinality\" property is used."
                 + " It can interfere with the results.");
             return;
         }
