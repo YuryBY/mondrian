@@ -1274,9 +1274,14 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
                 "while instantiating member reader '" + memberReaderClass);
         } else {
             SqlMemberSource source = new SqlMemberSource(hierarchy);
-            if (hierarchy.getDimension().isHighCardinality()) {
+            Dimension dimension = hierarchy.getDimension();
+            if (dimension.isHighCardinality()) {
+                LOGGER.warn(
+                    MondrianResource.instance()
+                        .HighCardinalityInDimension.str(
+                            dimension.getUniqueName()));
                 LOGGER.debug(
-                    "High cardinality for " + hierarchy.getDimension());
+                    "High cardinality for " + dimension);
                 return new NoCacheMemberReader(source);
             } else {
                 LOGGER.debug(

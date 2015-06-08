@@ -8,7 +8,6 @@
 // Copyright (C) 2005-2013 Pentaho and others
 // All Rights Reserved.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.*;
@@ -35,6 +34,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.sql.DataSource;
 
 /**
@@ -949,8 +949,14 @@ public class RolapConnection extends ConnectionBase {
 
             final TupleList filteredTupleList;
             if (!tupleList.isEmpty()
-                && tupleList.get(0).get(0).getDimension().isHighCardinality())
+                    && tupleList.get(0).get(0).getDimension()
+                        .isHighCardinality())
             {
+                LOGGER.warn(
+                    MondrianResource.instance()
+                        .HighCardinalityInDimension.str(
+                            tupleList.get(0).get(0).getDimension()
+                                .getUniqueName()));
                 filteredTupleList =
                     new DelegatingTupleList(
                         tupleList.getArity(),
