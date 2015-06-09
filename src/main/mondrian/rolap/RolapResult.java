@@ -1229,7 +1229,7 @@ public class RolapResult extends ResultBase {
                     positionsIndexes.put(axisOrdinal, 0);
                     final List<List<Member>> subPositions =
                         new ArrayList<List<Member>>();
-                    for (int i = 0; i < limit && tupleCursor.forward(); i++) {
+					while (tupleCursor.forward()) {
                         subPositions.add(tupleCursor.current());
                     }
                     positionsCurrent.put(axisOrdinal, subPositions);
@@ -1259,18 +1259,8 @@ public class RolapResult extends ResultBase {
                 } else {
                     pi = positionIndex;
                 }
-                for (final List<Member> tuple : subTuples) {
-                    point.setAxis(axisOrdinal, pi);
-                    final int savepoint = revaluator.savepoint();
-                    try {
-                        revaluator.setContext(tuple);
-                        execution.checkCancelOrTimeout();
-                        executeStripe(axisOrdinal - 1, revaluator, pos);
-                    } finally {
-                        revaluator.restore(savepoint);
-                    }
-                    pi++;
-                }
+                pi = setContextTorRevaluator(
+                    axisOrdinal, revaluator, pos, subTuples, pi);
             } else {
                 for (List<Member> tuple : tupleList) {
                     List<Member> measures =
@@ -1290,22 +1280,30 @@ public class RolapResult extends ResultBase {
                     }
                 }
 
-                int tupleIndex = 0;
-                for (final List<Member> tuple : tupleList) {
-                    point.setAxis(axisOrdinal, tupleIndex);
-                    final int savepoint = revaluator.savepoint();
-                    try {
-                        revaluator.setContext(tuple);
-                        execution.checkCancelOrTimeout();
-                        executeStripe(axisOrdinal - 1, revaluator, pos);
-                    } finally {
-                        revaluator.restore(savepoint);
-                    }
-                    tupleIndex++;
-                }
+                int tupleIndex = 0;                
+                tupleIndex = setContextTorRevaluator(
+                    axisOrdinal, revaluator, pos, tupleList, tupleIndex);
             }
         }
     }
+
+	private int setContextTorRevaluator(int axisOrdinal,
+			RolapEvaluator revaluator, final int[] pos,
+			List<List<Member>> subTuples, int positionIndex) {
+		for (final List<Member> tuple : subTuples) {
+		    point.setAxis(axisOrdinal, positionIndex);
+		    final int savepoint = revaluator.savepoint();
+		    try {
+		        revaluator.setContext(tuple);
+		        execution.checkCancelOrTimeout();
+		        executeStripe(axisOrdinal - 1, revaluator, pos);
+		    } finally {
+		        revaluator.restore(savepoint);
+		    }
+		    positionIndex++;
+		}
+		return positionIndex;
+	}
 
     private boolean isAxisHighCardinality(
         int axisOrdinal,
