@@ -3095,10 +3095,34 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testAvg() {
+        propSaver.set(
+                MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(
+                MondrianProperties.instance().ReadAggregates, true);
+        TestContext context = getTestContext().createSubstitutingCube(
+                "Sales",
+                null,
+                " <Measure name=\"Avg Sales\" column=\"unit_sales\" aggregator=\"avg\"\n"
+                        + " formatString=\"#.###\"/>",
+                null,
+                null);
+
         assertExprReturns(
-            "AVG({[Store].[All Stores].[USA].children},[Measures].[Store Sales])",
-            "188,412.71");
+                "AVG({[Store].[All Stores].[USA].children},[Measures].[Avg Sales])",
+                "188,412.71");
+
+        assertExprReturns(
+                "    AVG({[Store].[Store Country].Members}, [Measures].[Unit Sales])",
+                "188,412.71");
     }
+
+    public void testAvgWithNulls() {
+        assertExprReturns(
+                "    AVG({[Store].[Store Country].Members}, [Measures].[Unit Sales])",
+                "188,412.71");
+    }
+
+
 
     // todo: testAvgWithNulls
 
