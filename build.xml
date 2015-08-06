@@ -512,8 +512,6 @@ parser,
 generate.resources,
 generate.properties,
 def,
-compileJdk15,
-compileJdk16,
 compileJdk17"/>
 
   <target name="generate.resources" depends="define-tasks">
