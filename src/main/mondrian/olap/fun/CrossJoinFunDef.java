@@ -943,6 +943,14 @@ public class CrossJoinFunDef extends FunDefBase {
                     evaluator.setContext(member.getHierarchy().getAllMember());
                 }
 
+                if (!query.getStatement().getCurrentExecution()
+                    .isCancelOrTimeout())
+                {
+                    throw MondrianResource.instance()
+                        .QueryTimeout.ex(
+                            MondrianProperties.instance().QueryTimeout.get());
+                }
+
                 if (checkData(
                         nonAllMembers,
                         nonAllMembers.length - 1,
