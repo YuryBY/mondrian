@@ -28,6 +28,8 @@ import mondrian.util.FilteredIterableList;
 
 import org.apache.log4j.Logger;
 
+import org.eigenbase.util.property.StringProperty;
+
 import java.util.*;
 
 /**
@@ -2087,14 +2089,21 @@ public class SqlConstraintUtils {
                 && ((ListColumnPredicate) cc).getPredicates().size()
                 > maxConstraints)
             {
-                // Simply get them all, do not create where-clause.
-                // Below are two alternative approaches (and code). They
-                // both have problems.
-                LOG.debug(
+                LOG.error(
                     MondrianResource.instance()
                         .NativeSqlInClauseTooLarge.str(
                             level.getUniqueName(),
                             maxConstraints + ""));
+                StringProperty alertProperty =
+                    MondrianProperties.instance()
+                        .AlertNativeEvaluationUnsupported;
+                // if mondrian.native.unsupported.alert equals "ERROR"
+                // than use "fallback" strategy
+                if (alertProperty.get().equals("ERROR")) {
+                    throw MondrianResource.instance()
+                        .NativeEvaluationInClauseLimit
+                        .ex(String.valueOf(maxConstraints));
+                }
             } else {
                 String where =
                     RolapStar.Column.createInExpr(

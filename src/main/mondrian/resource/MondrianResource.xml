@@ -872,6 +872,13 @@
     </text>
 </exception>
 
+<exception id="800010" name="NativeEvaluationInClauseLimit"
+    className="mondrian.olap.NativeEvaluationInClauseLimitException">
+    <text>
+        The number of members({0}) is too large. You should either increase constraints number using ''mondrian.rolap.maxConstraints'' property or improve MDX query.
+    </text>
+</exception>
+
 <message id="8000104" name="NativeSqlInClauseTooLarge">
     <text>
         Cannot use native aggregation constraints for level ''{0}'' because the number of members is larger than the value of ''mondrian.rolap.maxConstraints'' ({1})

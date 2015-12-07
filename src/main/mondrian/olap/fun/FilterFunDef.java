@@ -1,12 +1,13 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (c) 2002-2015 Pentaho Corporation..  All rights reserved.
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2015 Pentaho and others
+// All Rights Reserved.
 */
-
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
@@ -114,12 +115,20 @@ class FilterFunDef extends FunDefBase {
                 NativeEvaluator nativeEvaluator =
                     schemaReader.getNativeSetEvaluator(
                         call.getFunDef(), call.getArgs(), evaluator, this);
+                TupleIterable result;
                 if (nativeEvaluator != null) {
-                    return (TupleIterable)
-                        nativeEvaluator.execute(ResultStyle.ITERABLE);
+                    try {
+                        result = (TupleIterable) nativeEvaluator
+                            .execute(ResultStyle.ITERABLE);
+                    } catch (NativeEvaluationInClauseLimitException e) {
+                        // "fallback" strategy supposes
+                        // mondrian.native.unsupported.alert equals "ERROR"
+                        result = makeIterable(evaluator);
+                    }
                 } else {
-                    return makeIterable(evaluator);
+                    result = makeIterable(evaluator);
                 }
+                return result;
             } finally {
                 evaluator.getTiming().markEnd(TIMING_NAME);
             }
