@@ -1587,6 +1587,26 @@ public class NativeSetEvaluationTest extends BatchTestCase {
                 getTestContext(), mdx, patterns, false, false, false);
         }
     }
+
+    /**
+    * supposes the results of native and non-native evaluations are equal.
+    *
+    * @see <a href="http://jira.pentaho.com/browse/MONDRIAN-1803">Jira issue</a>
+    */
+    public void testNativeFilterWithLargeAggSetInSlicer() {
+      // enable fallback
+      MondrianProperties.instance()
+          .AlertNativeEvaluationUnsupported.set("ERROR");
+      final String query = "with member customers.agg as "
+          + "'Aggregate(Except(Customers.[Name].members,    "
+          + "{[Customers].[USA].[OR].[Corvallis].[Judy Doolittle]}    ))' "
+          + " select filter(gender.gender.members, measures.[unit sales] >131500)"
+          + " on 0 from sales "
+          + " where customers.agg";
+      final String message =
+          "The results of native and non-native evaluations should be equal";
+      verifySameNativeAndNot(query, message, getTestContext());
+    }
 }
 
 // End NativeSetEvaluationTest.java
