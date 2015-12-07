@@ -1606,6 +1606,8 @@ public class NativeSetEvaluationTest extends BatchTestCase {
       final String message =
           "The results of native and non-native evaluations should be equal";
       verifySameNativeAndNot(query, message, getTestContext());
+      MondrianProperties.instance()
+          .AlertNativeEvaluationUnsupported.set("OFF");
     }
 }
 
