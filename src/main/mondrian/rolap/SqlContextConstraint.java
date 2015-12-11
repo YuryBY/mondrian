@@ -13,6 +13,7 @@ package mondrian.rolap;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
 import mondrian.rolap.RolapHierarchy.LimitedRollupMember;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -71,6 +72,17 @@ public class SqlContextConstraint
         Level [] levels,
         boolean strict)
     {
+        return isValidContext(
+            context, disallowVirtualCube, levels, strict, null);
+    }
+
+    public static boolean isValidContext(
+        Evaluator context,
+        boolean disallowVirtualCube,
+        Level [] levels,
+        boolean strict,
+        FunDef fun)
+    {
         if (context == null) {
             return false;
         }
@@ -107,12 +119,31 @@ public class SqlContextConstraint
 
         // we can not handle all calc members in slicer. Calc measure and some
         // like aggregates are exceptions
+        int maxConstraints =
+            MondrianProperties.instance().MaxConstraints.get();
         Member[] members = context.getMembers();
-        for (int i = 1; i < members.length; i++) {
-            if (members[i].isCalculated()
-                && !SqlConstraintUtils.isSupportedCalculatedMember(members[i]))
+        for (int i = 0; i < members.length; i++) {
+            boolean isCalculated = members[i].isCalculated();
+            if (isCalculated && !SqlConstraintUtils
+                .isSupportedCalculatedMember(members[i]))
             {
                 return false;
+            }
+            // http://jira.pentaho.com/browse/MONDRIAN-1999
+            if (isCalculated) {
+                int supportedCalculatedMembersQuantity =
+                    SqlConstraintUtils
+                        .expandExpressions(members[i], null, context)
+                        .size();
+                if (supportedCalculatedMembersQuantity > maxConstraints) {
+                    String message =
+                        MondrianResource.instance()
+                            .MembersQuantityExceedsMaxConstraints
+                            .str(String.valueOf(
+                                supportedCalculatedMembersQuantity));
+                    alertNonNative(context, fun, message);
+                    return false;
+                }
             }
         }
         return true;
@@ -370,6 +401,18 @@ public class SqlContextConstraint
     @Override
     public boolean supportsAggTables() {
         return true;
+    }
+
+    private static void alertNonNative(
+        Evaluator evaluator, FunDef fun, String reason)
+    {
+        if (!evaluator.getQuery().shouldAlertForNonNative(fun)) {
+            return;
+        }
+        reason =
+            (reason != null && !reason.isEmpty())
+                ? reason : "Context is not valid";
+        RolapUtil.alertNonNative(fun.getName(), reason);
     }
 }
 
