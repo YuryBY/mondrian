@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2014 Pentaho
+// Copyright (C) 2005-2015 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -17,7 +17,12 @@ import mondrian.olap.Axis;
 import mondrian.olap.Cell;
 import mondrian.olap.Connection;
 import mondrian.olap.*;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
 import mondrian.olap.Position;
+import mondrian.olap.Property;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
 import mondrian.rolap.RolapConnection;
@@ -39,6 +44,7 @@ import org.eigenbase.util.property.StringProperty;
 
 import org.olap4j.*;
 import org.olap4j.layout.RectangularCellSetFormatter;
+import org.olap4j.metadata.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -8323,11 +8329,11 @@ public class BasicQueryTest extends FoodMartTestCase {
         // Some DBs return 0 when we ask for null. Like Oracle.
         final String returnedValue;
         switch (getTestContext().getDialect().getDatabaseProduct()) {
-            case ORACLE:
-                returnedValue = "0";
-                break;
-            default:
-                returnedValue = "";
+        case ORACLE:
+            returnedValue = "0";
+            break;
+        default:
+            returnedValue = "";
         }
 
         testContext.assertQueryReturns(
@@ -8409,21 +8415,28 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "    <Level name=\"IsZero\" visible=\"true\" table=\"product\" column=\"product_id\" type=\"Integer\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
                 + "      <NameExpression>\n"
                 + "        <SQL dialect=\"generic\">\n"
-                + "          <![CDATA[case when " + dialect.quoteIdentifier("product","product_id") + "=0 then 'Zero' else 'Non-Zero' end]]>\n"
+                + "          <![CDATA[case when "
+                + dialect.quoteIdentifier(
+                    "product", "product_id")
+                + "=0 then 'Zero' else 'Non-Zero' end]]>\n"
                 + "        </SQL>\n"
                 + "      </NameExpression>\n"
                 + "    </Level>\n"
                 + "    <Level name=\"SubCat\" visible=\"true\" table=\"product_class\" column=\"product_class_id\" type=\"String\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
                 + "      <NameExpression>\n"
                 + "        <SQL dialect=\"generic\">\n"
-                + "          <![CDATA[" + dialect.quoteIdentifier("product_class","product_subcategory") + "]]>\n"
+                + "          <![CDATA["
+                + dialect.quoteIdentifier(
+                    "product_class", "product_subcategory")
+                + "]]>\n"
                 + "        </SQL>\n"
                 + "      </NameExpression>\n"
                 + "    </Level>\n"
                 + "    <Level name=\"ProductName\" visible=\"true\" table=\"product\" column=\"product_id\" type=\"Integer\" uniqueMembers=\"false\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
                 + "      <NameExpression>\n"
                 + "        <SQL dialect=\"generic\">\n"
-                + "          <![CDATA["+ dialect.quoteIdentifier("product","product_name") + "]]>\n"
+                + "          <![CDATA["
+                + dialect.quoteIdentifier("product", "product_name") + "]]>\n"
                 + "        </SQL>\n"
                 + "      </NameExpression>\n"
                 + "    </Level>\n"
@@ -8441,6 +8454,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "[Example.Example Hierarchy].[Non-Zero].[Juice].Children",
             "[Example.Example Hierarchy].[Non-Zero].[Juice].[Washington Berry Juice]");
     }
+
 }
 
 // End BasicQueryTest.java
