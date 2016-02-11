@@ -396,7 +396,6 @@ public class CrossJoinFunDef extends FunDefBase {
                     final List<List<List<Member>>> lists =
                         Arrays.<List<List<Member>>>asList(
                             l1, l2);
-                    final Member[] members = new Member[arity];
 
                     final CartesianProductList cartesianProductList =
                         new CartesianProductList<List<Member>>(
@@ -404,6 +403,7 @@ public class CrossJoinFunDef extends FunDefBase {
 
                     @Override
                     public List<Member> get(int index) {
+                        Member[] members = new Member[arity];
                         cartesianProductList.getIntoArray(index, members);
                         return Util.flatList(members);
                     }
