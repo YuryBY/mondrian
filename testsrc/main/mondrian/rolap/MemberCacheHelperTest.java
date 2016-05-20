@@ -165,7 +165,8 @@ public class MemberCacheHelperTest extends TestCase {
 
     private MemberKey mockMemberKey() {
         MemberKey mock = mock(MemberKey.class);
-        when(mock.getLevel()).thenReturn(mock(RolapLevel.class));
+        RolapLevel rolapLevelMock = mock( RolapLevel.class );
+        when(mock.getLevel()).thenReturn( rolapLevelMock );
         return mock;
     }
 
