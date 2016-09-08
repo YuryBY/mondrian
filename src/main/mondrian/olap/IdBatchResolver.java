@@ -11,6 +11,8 @@ package mondrian.olap;
 
 import mondrian.mdx.*;
 
+import mondrian.rolap.RolapCubeMember;
+import mondrian.spi.Dialect;
 import org.apache.commons.collections.*;
 import org.apache.log4j.Logger;
 
@@ -213,13 +215,32 @@ public final class IdBatchResolver {
     {
         for (Member child : childMembers) {
             for (Id childId : children) {
-                if (!resolvedIdentifiers.containsKey(childId)
-                    && getLastSegment(childId).matches(child.getName()))
+                if ( resolvedIdentifiers.containsKey( childId ) ) {
+                    continue;
+                }
+                boolean isDate = ((RolapCubeMember) child).getLevel().getDatatype()
+                    .equals(Dialect.Datatype.Date);
+                // http://jira.pentaho.com/browse/CDF-887
+                if (isDate) {
+                    prepareToComparing(child);
+                }
+                if (getLastSegment(childId).matches(child.getName()))
                 {
                     resolvedIdentifiers.put(
                         childId, (QueryPart)Util.createExpr(child));
                 }
             }
+        }
+    }
+
+    private void prepareToComparing(Member child) {
+        String uniqueName = child.getName();
+        String bracket = "]";
+        String time = " 00:00:00.0";
+        int pos = uniqueName.lastIndexOf(bracket);
+        if (pos > -1) {
+            String nameWithTime = uniqueName.substring(0, pos) + time + bracket;
+            child.setName(nameWithTime);
         }
     }
 
