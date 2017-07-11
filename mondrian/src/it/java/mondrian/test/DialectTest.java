@@ -1668,6 +1668,105 @@ public class DialectTest extends TestCase {
         query.addOrderBy(expr, null, true, true, true, true);
         assertTrue(query.toString().contains(expected));
     }
+
+    public void testMondrian2253_1() throws SQLException {
+        if (getDialect().getDatabaseProduct()
+                != Dialect.DatabaseProduct.VECTORWISE) {
+         fail();
+        }
+        final TestContext context = TestContext.instance();
+        String query =
+                "With "
+                        + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Quarters])' "
+                        + "Set [*BASE_MEMBERS_Customers] as 'Filter([Customers].[Country].Members, [Customers].CurrentMember In {[Customers].[All Customers].[USA]})' "
+                        + "Set [*BASE_MEMBERS_Quarters] as 'Filter([Time].[Quarter].Members, "
+                        + "[Time].currentMember not in {[Time].[1997].[Q1], [Time].[1998].[Q3]})' "
+                        + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember,[Time].currentMember)})' "
+                        + "Set [*ORDERED_CJ_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], [Time].currentmember.OrderKey, BASC)' "
+                        + "Select "
+                        + "{[Measures].[Customer Count]} on columns, "
+                        + "Non Empty [*ORDERED_CJ_ROW_AXIS] on rows "
+                        + "From [Sales]";
+        String expected = "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[Customer Count]}\n" +
+                "Axis #2:\n" +
+                "{[Customers].[USA], [Time].[1997].[Q2]}\n" +
+                "{[Customers].[USA], [Time].[1997].[Q3]}\n" +
+                "{[Customers].[USA], [Time].[1997].[Q4]}\n" +
+                "Row #0: 2,973\n" +
+                "Row #1: 3,026\n" +
+                "Row #2: 3,261\n";
+        context.assertQueryReturns(query, expected);
+    }
+
+    public void testMondrian2253_2() throws SQLException {
+        if (getDialect().getDatabaseProduct()
+                != Dialect.DatabaseProduct.VECTORWISE) {
+            fail();
+        }
+        final TestContext context = TestContext.instance();
+        String query =
+                "with "
+                        + "set [Filtered Store City Set] as "
+                        + "{[Store].[USA].[OR].[Portland], "
+                        + " [Store].[USA].[OR].[Salem], "
+                        + " [Store].[USA].[CA].[San Francisco], "
+                        + " [Store].[USA].[WA].[Tacoma]} "
+                        + "set [NECJ] as NonEmptyCrossJoin([Filtered Store City Set], {[Product].[Product Family].Food}) "
+                        + "select [NECJ] on columns from [Sales]";
+        String expected = "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Store].[USA].[CA].[San Francisco], [Product].[Food]}\n" +
+                "{[Store].[USA].[OR].[Portland], [Product].[Food]}\n" +
+                "{[Store].[USA].[OR].[Salem], [Product].[Food]}\n" +
+                "{[Store].[USA].[WA].[Tacoma], [Product].[Food]}\n" +
+                "Row #0: 1,555\n" +
+                "Row #0: 18,632\n" +
+                "Row #0: 29,905\n" +
+                "Row #0: 25,453\n";
+        context.assertQueryReturns(query, expected);
+    }
+
+
+    public void testMondrian2253_3() throws SQLException {
+        if (getDialect().getDatabaseProduct()
+                != Dialect.DatabaseProduct.VECTORWISE) {
+            fail();
+        }
+        final TestContext context = TestContext.instance();
+        String query =
+                "WITH\n" +
+                        "SET [*NATIVE_CJ_SET] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Store_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Product_],[*BASE_MEMBERS__Time_]))'\n" +
+                        "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Store].CURRENTMEMBER.ORDERKEY,BDESC,[Product].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([Product].CURRENTMEMBER,[Product].[Product Subcategory]).ORDERKEY,BASC,ANCESTOR([Time].CURRENTMEMBER, [Time].[Year]).ORDERKEY,BASC,[Time].CURRENTMEMBER.ORDERKEY,BASC)'\n" +
+                        "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n" +
+                        "SET [*BASE_MEMBERS__Store_] AS '{[Store].[All Stores].[Canada],[Store].[All Stores].[USA]}'\n" +
+                        "SET [*BASE_MEMBERS__Product_] AS '{[Product].[All Products].[Food].[Deli].[Meat].[Bologna].[American]}'\n" +
+                        "SET [*BASE_MEMBERS__Time_] AS '[Time].[Quarter].MEMBERS'\n" +
+                        "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Store].CURRENTMEMBER,[Product].CURRENTMEMBER,[Time].CURRENTMEMBER)})'\n" +
+                        "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Store Cost]', FORMAT_STRING = '#,###.00', SOLVE_ORDER=500\n" +
+                        "SELECT\n" +
+                        "[*BASE_MEMBERS__Measures_] ON COLUMNS\n" +
+                        ", NON EMPTY\n" +
+                        "[*SORTED_ROW_AXIS] ON ROWS\n" +
+                        "FROM [Sales]";
+        String expected = "Axis #0:\n" +
+                "{}\n" +
+                "Axis #1:\n" +
+                "{[Measures].[*FORMATTED_MEASURE_0]}\n" +
+                "Axis #2:\n" +
+                "{[Store].[USA], [Product].[Food].[Deli].[Meat].[Bologna].[American], [Time].[1997].[Q1]}\n" +
+                "{[Store].[USA], [Product].[Food].[Deli].[Meat].[Bologna].[American], [Time].[1997].[Q2]}\n" +
+                "{[Store].[USA], [Product].[Food].[Deli].[Meat].[Bologna].[American], [Time].[1997].[Q3]}\n" +
+                "{[Store].[USA], [Product].[Food].[Deli].[Meat].[Bologna].[American], [Time].[1997].[Q4]}\n" +
+                "Row #0: 133.11\n" +
+                "Row #1: 105.68\n" +
+                "Row #2: 100.74\n" +
+                "Row #3: 150.10\n";
+        context.assertQueryReturns(query, expected);
+    }
 }
 
 // End DialectTest.java
